@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect Four</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(7, 70px);
+            grid-template-rows: repeat(6, 70px);
+            gap: 5px;
+            background-color: #1e3a8a;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .cell {
+            width: 70px;
+            height: 70px;
+            background-color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .cell:hover {
+            transform: scale(1.1);
+        }
+        .red { background-color: #ef4444; }
+        .yellow { background-color: #facc15; }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            background-color: #3b82f6;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        button:hover {
+            background-color: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Connect Four</h1>
+    <div class="board" id="board"></div>
+    <button onclick="resetGame()">Reset Game</button>
+    <script>
+        const rows = 6, cols = 7;
+        let board = Array.from({ length: rows }, () => Array(cols).fill(null));
+        let currentPlayer = 'red';
+        const boardElement = document.getElementById('board');
+
+        function createBoard() {
+            boardElement.innerHTML = '';
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    cell.onclick = () => dropDisc(c);
+                    boardElement.appendChild(cell);
+                }
+            }
+        }
+
+        function dropDisc(col) {
+            for (let r = rows - 1; r >= 0; r--) {
+                if (!board[r][col]) {
+                    board[r][col] = currentPlayer;
+                    updateBoard();
+                    if (checkWin(r, col)) {
+                        setTimeout(() => alert(`${currentPlayer.toUpperCase()} Wins!`), 10);
+                        return;
+                    }
+                    currentPlayer = currentPlayer === 'red' ? 'yellow' : 'red';
+                    return;
+                }
+            }
+        }
+
+        function updateBoard() {
+            board.forEach((row, r) => {
+                row.forEach((cell, c) => {
+                    const cellElement = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+                    cellElement.className = 'cell ' + (cell || '');
+                });
+            });
+        }
+
+        function checkWin(r, c) {
+            return (
+                checkDirection(r, c, 1, 0) || // Vertical
+                checkDirection(r, c, 0, 1) || // Horizontal
+                checkDirection(r, c, 1, 1) || // Diagonal /
+                checkDirection(r, c, 1, -1)   // Diagonal \
+            );
+        }
+
+        function checkDirection(r, c, dr, dc) {
+            let count = 1;
+            for (let i = 1; i < 4; i++) {
+                let nr = r + dr * i, nc = c + dc * i;
+                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && board[nr][nc] === currentPlayer) count++;
+                else break;
+            }
+            for (let i = 1; i < 4; i++) {
+                let nr = r - dr * i, nc = c - dc * i;
+                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && board[nr][nc] === currentPlayer) count++;
+                else break;
+            }
+            return count >= 4;
+        }
+
+        function resetGame() {
+            board = Array.from({ length: rows }, () => Array(cols).fill(null));
+            currentPlayer = 'red';
+            createBoard();
+        }
+
+        createBoard();
+    </script>
+</body>
+</html>
